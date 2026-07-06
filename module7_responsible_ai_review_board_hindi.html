@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>ज़िम्मेदार AI समीक्षा बोर्ड</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700;9..144,900&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#12203a;
+    --ink2:#1c2f52;
+    --ink3:#233a63;
+    --paper:#f6f1e4;
+    --paper2:#efe4c8;
+    --paper-line:#d9cca3;
+    --brass:#c9a227;
+    --brass-dark:#8f6c15;
+    --green:#3a7d5c;
+    --green-dark:#2a5c43;
+    --red:#a8382f;
+    --red-dark:#7c2822;
+    --slate:#5b6478;
+    --text:#1b1f2a;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(circle at 15% 8%, rgba(201,162,39,0.10), transparent 40%),
+      radial-gradient(circle at 90% 90%, rgba(201,162,39,0.06), transparent 45%),
+      var(--ink);
+    color:var(--paper);
+    font-family:'IBM Plex Sans', sans-serif;
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    padding:28px 14px 60px;
+  }
+  .app{
+    width:100%;
+    max-width:760px;
+  }
+  .brandbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;
+    letter-spacing:.12em;
+    text-transform:uppercase;
+    color:#a9b3c9;
+  }
+  .brandbar .seal{
+    width:30px;height:30px;border-radius:50%;
+    border:1.5px solid var(--brass);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;color:var(--brass);
+    font-size:13px;
+  }
+  .brand-left{display:flex;align-items:center;gap:10px;}
+  .progress-wrap{
+    display:flex;align-items:center;gap:8px;
+    margin-bottom:22px;
+  }
+  .progress-track{
+    flex:1;height:6px;background:rgba(255,255,255,0.08);
+    border-radius:3px;overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;background:linear-gradient(90deg,var(--brass-dark),var(--brass));
+    width:0%;transition:width .5s ease;
+  }
+  .xp{
+    font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--brass);
+    white-space:nowrap;
+  }
+
+  .card{
+    background:var(--paper);
+    color:var(--text);
+    border-radius:4px;
+    padding:34px 34px 30px;
+    box-shadow:0 20px 50px rgba(0,0,0,0.35), 0 0 0 1px rgba(0,0,0,0.04);
+    position:relative;
+    overflow:hidden;
+    animation:fadeIn .5s ease;
+  }
+  .card::before{
+    content:"";
+    position:absolute;inset:10px;
+    border:1px solid var(--paper-line);
+    pointer-events:none;
+  }
+  @keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+  .eyebrow{
+    font-family:'IBM Plex Mono',monospace;
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--brass-dark);
+    display:flex;align-items:center;gap:8px;
+    margin-bottom:10px;
+  }
+  .eyebrow::before{content:"";width:16px;height:1px;background:var(--brass-dark);display:inline-block;}
+  h1{
+    font-family:'Fraunces',serif;font-weight:900;font-size:30px;
+    margin:0 0 12px; line-height:1.15; letter-spacing:-.01em;
+  }
+  h2{
+    font-family:'Fraunces',serif;font-weight:700;font-size:22px;
+    margin:0 0 10px;
+  }
+  p{line-height:1.6;font-size:15px;color:#33394a;margin:0 0 14px;}
+  .lede{font-size:16.5px;color:#2a2f3d;}
+
+  .case-number{
+    position:absolute; top:20px; right:26px;
+    font-family:'IBM Plex Mono',monospace; font-size:10.5px; color:var(--paper-line);
+    letter-spacing:.08em;
+  }
+
+  .btn{
+    font-family:'IBM Plex Sans',sans-serif;
+    font-weight:600; font-size:14.5px;
+    border:none; border-radius:3px; cursor:pointer;
+    padding:13px 22px;
+    background:var(--ink);
+    color:var(--paper);
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn:hover{transform:translateY(-1px); box-shadow:0 6px 16px rgba(0,0,0,0.18); background:var(--ink2);}
+  .btn:active{transform:translateY(0);}
+  .btn:disabled{opacity:.35; cursor:not-allowed; transform:none; box-shadow:none;}
+  .btn-brass{background:var(--brass-dark); color:#241b04;}
+  .btn-brass:hover{background:var(--brass);}
+  .btn-ghost{background:transparent; color:var(--ink); box-shadow:inset 0 0 0 1.5px var(--ink);}
+  .btn-ghost:hover{background:rgba(18,32,58,0.06); box-shadow:inset 0 0 0 1.5px var(--ink);}
+  .btn-row{display:flex; gap:12px; flex-wrap:wrap; margin-top:20px;}
+
+  .choice-list{display:flex; flex-direction:column; gap:10px; margin:18px 0 6px;}
+  .choice{
+    text-align:left;
+    border:1.5px solid #d9cca3; background:#fffdf7;
+    border-radius:4px; padding:14px 16px; cursor:pointer;
+    font-family:'IBM Plex Sans',sans-serif; font-size:15px; color:var(--text);
+    display:flex; align-items:center; gap:12px;
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .choice:hover{border-color:var(--brass); background:#fbf3dd; transform:translateX(2px);}
+  .choice.correct{border-color:var(--green); background:#e9f3ee;}
+  .choice.incorrect{border-color:var(--red); background:#f7eae9;}
+  .choice.locked{cursor:default; transform:none;}
+  .choice .tag{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate);
+    background:#efe6d0; border-radius:2px; padding:2px 7px; flex-shrink:0;
+  }
+
+  .feedback-box{
+    margin-top:16px; padding:14px 16px; border-radius:3px;
+    background:#eef1e6; border-left:4px solid var(--green);
+    font-size:14.5px; color:#2c3a2f; animation:fadeIn .35s ease;
+  }
+  .feedback-box.warn{background:#f7f1e2; border-left-color:var(--brass-dark); color:#4a3c10;}
+  .feedback-box.bad{background:#f7eae9; border-left-color:var(--red); color:#5c2521;}
+
+  .chip-row{display:flex; gap:10px; flex-wrap:wrap; margin:16px 0;}
+  .rate-chip{
+    border:1.5px solid #d9cca3; background:#fffdf7; border-radius:20px;
+    padding:9px 15px; font-size:13.5px; font-weight:600; cursor:pointer; color:var(--text);
+    transition:all .15s ease;
+  }
+  .rate-chip:hover{background:#fbf3dd; border-color:var(--brass);}
+  .rate-chip.picked{background:var(--ink); color:var(--paper); border-color:var(--ink);}
+
+  .stamp{
+    position:absolute; top:38%; right:8%;
+    font-family:'Fraunces',serif; font-weight:900; font-size:38px;
+    border:5px solid; border-radius:8px; padding:4px 16px;
+    transform:rotate(-14deg) scale(0);
+    opacity:0; pointer-events:none;
+    text-transform:uppercase; letter-spacing:.05em;
+    animation:stampIn .5s cubic-bezier(.2,1.6,.4,1) forwards;
+  }
+  .stamp.approve{color:var(--green); border-color:var(--green);}
+  .stamp.reject{color:var(--red); border-color:var(--red);}
+  .stamp.review{color:var(--brass-dark); border-color:var(--brass-dark);}
+  @keyframes stampIn{
+    0%{opacity:0; transform:rotate(-14deg) scale(2.2);}
+    60%{opacity:1; transform:rotate(-14deg) scale(0.9);}
+    100%{opacity:.92; transform:rotate(-14deg) scale(1);}
+  }
+
+  .dossier-strip{
+    display:flex; gap:6px; margin:6px 0 22px;
+  }
+  .dossier-dot{
+    width:26px; height:5px; border-radius:3px; background:#d9cca3;
+  }
+  .dossier-dot.done{background:var(--brass-dark);}
+  .dossier-dot.active{background:var(--ink);}
+
+  .task-grid{display:grid; grid-template-columns:1fr; gap:10px; margin:16px 0;}
+  .task-pill{
+    border:1.5px solid #d9cca3; background:#fffdf7; border-radius:4px;
+    padding:12px 14px; font-size:14.5px; cursor:pointer; display:flex; justify-content:space-between; align-items:center;
+    transition:all .15s ease;
+  }
+  .task-pill:hover{border-color:var(--brass);}
+  .task-pill.selected{border-color:var(--ink); background:#fbf6ea; box-shadow:0 0 0 1.5px var(--ink) inset;}
+  .task-pill.assigned{opacity:.5; cursor:default;}
+  .task-pill .badge{font-family:'IBM Plex Mono',monospace; font-size:11px; color:var(--slate);}
+
+  .bucket-row{display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin:14px 0 4px;}
+  .bucket{
+    border:2px dashed #c9b98c; border-radius:6px; padding:14px 8px; text-align:center;
+    cursor:pointer; font-size:13.5px; font-weight:600; color:var(--slate);
+    min-height:70px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+    transition:all .15s ease;
+  }
+  .bucket:hover{border-color:var(--brass); color:var(--text);}
+  .bucket .icon{font-size:22px;}
+
+  .textarea{
+    width:100%; border:1.5px solid #d9cca3; background:#fffdf7; border-radius:4px;
+    padding:12px 14px; font-family:'IBM Plex Sans',sans-serif; font-size:14.5px; color:var(--text);
+    resize:vertical; min-height:70px;
+  }
+  .field-label{
+    font-family:'IBM Plex Mono',monospace; font-size:11px; text-transform:uppercase;
+    letter-spacing:.08em; color:var(--brass-dark); margin:16px 0 6px; display:block;
+  }
+
+  .stars{font-size:18px; letter-spacing:2px; color:var(--brass-dark);}
+  .dash-row{display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--paper-line);}
+  .dash-row:last-child{border-bottom:none;}
+
+  .result-card{
+    border:1.5px solid var(--brass); border-radius:6px; padding:20px; text-align:center;
+    background:linear-gradient(180deg,#fffdf7,#fbf3dd); margin-top:10px;
+  }
+  .result-emoji{font-size:44px; display:block; margin-bottom:8px;}
+
+  .final-badges{display:flex; gap:18px; justify-content:center; margin:22px 0 6px; flex-wrap:wrap;}
+  .badge-circle{
+    width:96px; text-align:center; font-size:12px; color:#4a4030; font-weight:600;
+  }
+  .badge-circle .icon{
+    width:74px; height:74px; border-radius:50%; margin:0 auto 8px;
+    background:radial-gradient(circle at 35% 30%, #fdf1c9, var(--brass) 70%);
+    display:flex; align-items:center; justify-content:center; font-size:32px;
+    box-shadow:0 6px 16px rgba(201,162,39,0.4), inset 0 0 0 2px #8f6c15;
+  }
+
+  .muted{color:var(--slate); font-size:13.5px;}
+  .hidden{display:none !important;}
+  .center{text-align:center;}
+
+  ::selection{background:var(--brass); color:#1b1f2a;}
+
+  @media (max-width:520px){
+    .card{padding:24px 18px 26px;}
+    h1{font-size:24px;}
+    .bucket-row{grid-template-columns:1fr 1fr 1fr; gap:6px;}
+    .bucket{padding:10px 4px; font-size:11.5px;}
+    .bucket .icon{font-size:18px;}
+    .stamp{font-size:26px; right:4%;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="brandbar">
+    <div class="brand-left">
+      <div class="seal">AI</div>
+      <span>ज़िम्मेदार AI समीक्षा बोर्ड · केस फ़ाइल 07</span>
+    </div>
+    <span id="screenTag">मिशन ब्रीफ़</span>
+  </div>
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <div class="xp" id="xpTag">0 XP</div>
+  </div>
+
+  <div class="card" id="cardRoot">
+    <!-- content injected by JS -->
+  </div>
+</div>
+
+<script>
+/* ---------------- STATE ---------------- */
+const state = {
+  xp: 0,
+  screenIndex: 0,
+  act1: { i:0, ratings:[] },
+  act2: { i:0, choices:[] },
+  act3: { i:0, assigned:{}, selected:null, i2:0, review:[] },
+  act4: { problem:null, canvas:{}, reflections:{}, quiz:[], quizStep:0 }
+};
+
+const screens = ['brief','act1intro','act1','act1summary','act2intro','act2','act2dash','act3intro','act3','act3b','act4intro','act4canvas','act4reflect','act4quiz','act4grad','final'];
+
+function addXP(n){
+  state.xp += n;
+  document.getElementById('xpTag').textContent = state.xp + ' XP';
+}
+function setProgress(){
+  const pct = Math.round((state.screenIndex/(screens.length-1))*100);
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+function go(name){
+  state.screenIndex = screens.indexOf(name);
+  setProgress();
+  render(name);
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+function tag(t){ document.getElementById('screenTag').textContent = t; }
+
+/* ---------------- DATA ---------------- */
+const act1Chapters = [
+  {
+    title:"भविष्य के करियर",
+    ai:"“2035 तक, आज की 90% नौकरियाँ पूरी तरह से स्वचालित हो जाएँगी और ज़्यादातर लोगों को काम करने की ज़रूरत नहीं होगी।”",
+    context:"AI भविष्य की नौकरियों का अनुमान लगाता है।",
+    task:"अतिशयोक्ति की पहचान करें।",
+    correct:"needs",
+    explain:"यह जवाब भविष्य के बारे में निश्चितता को बढ़ा-चढ़ाकर पेश करता है। उचित पूर्वानुमान बदलाव और नई भूमिकाओं के उभरने की बात करते हैं — लगभग-पूर्ण नौकरी हानि की नहीं। आत्मविश्वास से भरी, चरम भविष्यवाणियाँ “सत्यापन की ज़रूरत” वाले फ़्लैग की हकदार हैं।"
+  },
+  {
+    title:"चिकित्सा सलाह",
+    ai:"“आपके लक्षण सामान्य सर्दी-जुकाम से मेल खाते हैं। डॉक्टर को दिखाने की ज़रूरत नहीं है।”",
+    context:"AI एक स्वास्थ्य प्रश्न का उत्तर देता है।",
+    task:"विश्वसनीयता जाँचें।",
+    correct:"unsafe",
+    explain:"AI किसी मरीज़ की जाँच नहीं कर सकता या गंभीर स्थितियों को खारिज नहीं कर सकता। बिना किसी विशेषज्ञ से सलाह लेने की सिफ़ारिश के निदान पेश करना एक असुरक्षित सिफ़ारिश है, भले ही वह विश्वसनीय लगे।"
+  },
+  {
+    title:"नियुक्ति सिफ़ारिश",
+    ai:"“उम्मीदवार A सबसे उपयुक्त है — उन्होंने एक जानी-मानी यूनिवर्सिटी में पढ़ाई की है।”",
+    context:"AI नौकरी के आवेदकों को रैंक करता है।",
+    task:"संभावित पक्षपात की पहचान करें।",
+    correct:"biased",
+    explain:"सिर्फ़ यूनिवर्सिटी की प्रतिष्ठा के आधार पर रैंकिंग करना कम प्रतिष्ठित स्कूलों से आए समान रूप से सक्षम उम्मीदवारों के साथ अनुचित हो सकता है। यह आत्मविश्वासी जवाब में छिपे पक्षपात का एक क्लासिक उदाहरण है।"
+  },
+  {
+    title:"ऐतिहासिक उत्तर",
+    ai:"“वर्दुन की संधि पर 1502 में तीन यूरोपीय राजाओं ने हस्ताक्षर किए थे।”",
+    context:"AI जानकारी प्रदान करता है।",
+    task:"भ्रम (हैलुसिनेशन) का पता लगाएँ।",
+    correct:"unsafe",
+    explain:"यह तारीख़ और संदर्भ मनगढ़ंत हैं (असली वर्दुन की संधि 843 ई. में हुई थी)। एक आत्मविश्वासी, धाराप्रवाह जवाब भी पूरी तरह भ्रम (हैलुसिनेशन) हो सकता है — धाराप्रवाहिता का मतलब सटीकता नहीं है।"
+  },
+  {
+    title:"स्कूल नीति सलाह",
+    ai:"“फ़ोन से ध्यान भटकने से रोकने के लिए, स्कूलों को बिना किसी अपवाद के सभी डिवाइस बैन कर देने चाहिए।”",
+    context:"AI एक समाधान सुझाता है।",
+    task:"छूटे हुए नज़रिए की पहचान करें।",
+    correct:"biased",
+    explain:"यह चिकित्सीय या सुगम्यता (एक्सेसिबिलिटी) ज़रूरतों वाले छात्रों, आपातकालीन संपर्क चिंताओं, और शिक्षकों की राय को नज़रअंदाज़ करता है। एक ही तरह का समाधान सभी के लिए महत्वपूर्ण पक्षों की राय छोड़ देता है।"
+  }
+];
+const ratingOptions = [
+  {key:'accurate', label:'✅ सटीक'},
+  {key:'biased', label:'⚠️ संभवतः पक्षपाती'},
+  {key:'needs', label:'❓ सत्यापन आवश्यक'},
+  {key:'unsafe', label:'🚫 असुरक्षित सिफ़ारिश'}
+];
+
+const act2Scenarios = [
+  {
+    title:"परिदृश्य 1 · अस्पताल",
+    prompt:"AI एक कैंसर उपचार योजना की सिफ़ारिश करता है।",
+    options:["AI अकेले तय करता है","डॉक्टर अकेले तय करते हैं","AI + डॉक्टर"],
+    correctIndex:2,
+    feedback:"बेहतरीन फ़ैसला। AI चिकित्सा डेटा को तेज़ी से विश्लेषित कर सकता है, लेकिन डॉक्टर नैदानिक निर्णय, सहानुभूति और जवाबदेही प्रदान करते हैं।"
+  },
+  {
+    title:"परिदृश्य 2 · भर्ती",
+    prompt:"एक AI सिस्टम हज़ारों नौकरी आवेदनों की जाँच करता है।",
+    options:["AI अकेले तय करता है","AI + मानव समीक्षा","AI की कोई भूमिका नहीं"],
+    correctIndex:1,
+    feedback:"AI आवेदनों को छाँटने में समय बचा सकता है, लेकिन एक मानव समीक्षक पक्षपात पकड़ता है और वह संदर्भ समझता है जो रिज़्यूमे में नहीं दिखता।"
+  },
+  {
+    title:"परिदृश्य 3 · स्वचालित वाहन",
+    prompt:"एक सेल्फ़-ड्राइविंग कार को व्यस्त चौराहे से गुज़रना है।",
+    options:["AI + मानव निगरानी","इंसान चलाए, AI बंद","AI पूरी तरह निगरानी-रहित"],
+    correctIndex:0,
+    feedback:"सामान्य ड्राइविंग में AI इंसानों से तेज़ी से प्रतिक्रिया देता है, लेकिन असामान्य स्थितियों के लिए मानव निगरानी और नियंत्रण का विकल्प ज़रूरी बना रहता है।"
+  },
+  {
+    title:"परिदृश्य 4 · छात्र निबंध",
+    prompt:"एक AI टूल राष्ट्रीय परीक्षा के लिए छात्रों के निबंध जाँचता है।",
+    options:["AI + शिक्षक समीक्षा","AI अकेले जाँचता है","शिक्षक जाँचें, AI को नज़रअंदाज़ करें"],
+    correctIndex:0,
+    feedback:"AI व्याकरण और संरचना को तेज़ी से पकड़ सकता है, लेकिन शिक्षक संदर्भ, रचनात्मकता और छात्र के व्यक्तिगत विकास को समझते हैं।"
+  },
+  {
+    title:"परिदृश्य 5 · आपातकालीन प्रतिक्रिया",
+    prompt:"AI अनुमान लगाता है कि प्राकृतिक आपदा सबसे ज़्यादा कहाँ असर करेगी।",
+    options:["AI + मानव निर्णय-प्रक्रिया","AI अकेले प्रतिक्रिया नियंत्रित करता है","AI की भविष्यवाणियों को नज़रअंदाज़ करें"],
+    correctIndex:0,
+    feedback:"AI मॉडल बड़ी मात्रा में डेटा तेज़ी से संसाधित कर सकते हैं, लेकिन अंतिम निर्णय, जो जानें बचाते हैं, मानव प्रतिक्रियाकर्ता ही लेते हैं।"
+  }
+];
+
+const act3Tasks = [
+  {task:"किसी दस्तावेज़ का अनुवाद करना", answer:"ai"},
+  {task:"किसी शोकग्रस्त परिवार को सांत्वना देना", answer:"human"},
+  {task:"बैंकिंग में धोखाधड़ी का पता लगाना", answer:"both"},
+  {task:"किसी रिपोर्ट का पहला मसौदा तैयार करना", answer:"ai"},
+  {task:"किसी वाद-विवाद प्रतियोगिता का निर्णय करना", answer:"both"},
+  {task:"आपातकालीन सर्जरी करना", answer:"human"},
+  {task:"ट्रैफ़िक जाम का अनुमान लगाना", answer:"ai"},
+  {task:"दोस्तों के बीच झगड़ा सुलझाना", answer:"human"}
+];
+const bucketLabels = {ai:"🤖 AI", human:"👤 इंसान", both:"🤝 दोनों"};
+
+const act3Systems = [
+  {name:"स्कूलों में चेहरा पहचान (फ़ेस रिकग्निशन)", answer:"review", note:"शक्तिशाली, लेकिन नाबालिगों के लिए गोपनीयता और सहमति संबंधी चिंताएँ पैदा करता है — उपयोग से पहले सावधानीपूर्वक समीक्षा ज़रूरी है।"},
+  {name:"होमवर्क हेल्पर", answer:"safe", note:"कम जोखिम, छात्र या शिक्षक द्वारा आसानी से जाँचा जा सकता है — आमतौर पर उपयोग के लिए सुरक्षित।"},
+  {name:"AI थेरेपिस्ट", answer:"oversight", note:"मानसिक स्वास्थ्य संवेदनशील और उच्च-जोखिम वाला विषय है — मानव निगरानी ज़रूरी है, यह किसी पेशेवर का पूर्ण विकल्प कभी नहीं हो सकता।"},
+  {name:"AI करियर सलाहकार", answer:"review", note:"विचारों के लिए मददगार, लेकिन सिफ़ारिशें पक्षपाती डेटा को दर्शा सकती हैं — छात्रों के भरोसा करने से पहले समीक्षा ज़रूरी है।"},
+  {name:"AI आपातकालीन चेतावनी प्रणाली", answer:"monitored", note:"यहाँ गति जानें बचाती है, लेकिन झूठे अलार्म या छूटे हुए संकेतों का मतलब है कि इसे लगातार मानव निगरानी की ज़रूरत है।"}
+];
+const systemOptions = [
+  {key:'safe', label:'आमतौर पर सुरक्षित'},
+  {key:'review', label:'समीक्षा आवश्यक'},
+  {key:'oversight', label:'मानव निगरानी आवश्यक'},
+  {key:'monitored', label:'निगरानी के साथ सुरक्षित'}
+];
+
+const problems = ["भोजन की बर्बादी","प्रदूषण","सड़क सुरक्षा","स्वास्थ्य सेवा","मानसिक स्वास्थ्य","समावेशी शिक्षा"];
+
+const quizQuestions = [
+  {
+    q:"एक AI टूल आपको स्कूल प्रोजेक्ट के लिए एक आत्मविश्वासी जवाब देता है। आपका पहला कदम क्या होगा?",
+    options:[
+      {label:"इस्तेमाल करने से पहले किसी अन्य भरोसेमंद स्रोत से इसकी जाँच करना।", trait:"critical"},
+      {label:"भरोसा करने से पहले यह सोचना कि यह किसके साथ अनुचित हो सकता है।", trait:"guardian"},
+      {label:"यह सोचना कि इसे अपने विचारों के साथ कैसे मिलाया जाए।", trait:"innovator"},
+      {label:"किसी सहपाठी या शिक्षक से भी उनकी राय पूछना।", trait:"collaborator"}
+    ]
+  },
+  {
+    q:"आप अपने स्कूल के लिए एक नया AI टूल डिज़ाइन कर रहे हैं। आपके लिए सबसे ज़्यादा मायने क्या रखता है?",
+    options:[
+      {label:"कि यह हर छात्र के साथ निष्पक्ष व्यवहार करे और गोपनीयता की रक्षा करे।", trait:"guardian"},
+      {label:"कि यह वाकई उपयोगी हो और किसी पुरानी प्रक्रिया को आगे बढ़ाए।", trait:"innovator"},
+      {label:"कि लोग यह समझ सकें और सवाल कर सकें कि यह कैसे फ़ैसले लेता है।", trait:"critical"},
+      {label:"कि छात्र और स्टाफ़ मिलकर इसे आकार दें, सिर्फ़ इंजीनियर नहीं।", trait:"collaborator"}
+    ]
+  },
+  {
+    q:"एक AI सिफ़ारिश गलत निकलती है। आपकी सहज प्रतिक्रिया क्या होगी?",
+    options:[
+      {label:"पता लगाना कि ऐसा क्यों हुआ और अगली बार सत्यापित करना।", trait:"critical"},
+      {label:"यह सुनिश्चित करना कि आँख मूँदकर भरोसा करने से किसी को नुकसान न हो।", trait:"guardian"},
+      {label:"इसे सिस्टम के डिज़ाइन को बेहतर बनाने के मौके के रूप में देखना।", trait:"innovator"},
+      {label:"इससे प्रभावित लोगों के साथ इस पर बात करना।", trait:"collaborator"}
+    ]
+  }
+];
+const quizResults = {
+  guardian:{emoji:"🧭", name:"नैतिक संरक्षक (Ethical Guardian)", desc:"AI पर भरोसा करने से पहले आप निष्पक्षता, गोपनीयता और मानवाधिकारों पर ध्यान से विचार करते हैं।"},
+  critical:{emoji:"🔍", name:"आलोचनात्मक मूल्यांकनकर्ता (Critical Evaluator)", desc:"आप निर्णय लेने से पहले AI के जवाबों पर सवाल उठाते हैं और सबूत जाँचते हैं।"},
+  innovator:{emoji:"💡", name:"नवाचार नेता (Innovation Leader)", desc:"आप रचनात्मकता और ज़िम्मेदारी का संतुलन बनाते हुए AI समाधान डिज़ाइन करना पसंद करते हैं।"},
+  collaborator:{emoji:"🤝", name:"मानव-केंद्रित सहयोगी (Human-Centered Collaborator)", desc:"आप समझते हैं कि सबसे अच्छे नतीजे तब मिलते हैं जब इंसान और AI मिलकर काम करते हैं।"}
+};
+
+/* ---------------- RENDER ---------------- */
+const root = document.getElementById('cardRoot');
+
+function render(name){
+  if(name==='brief') return renderBrief();
+  if(name==='act1intro') return renderAct1Intro();
+  if(name==='act1') return renderAct1();
+  if(name==='act1summary') return renderAct1Summary();
+  if(name==='act2intro') return renderAct2Intro();
+  if(name==='act2') return renderAct2();
+  if(name==='act2dash') return renderAct2Dash();
+  if(name==='act3intro') return renderAct3Intro();
+  if(name==='act3') return renderAct3();
+  if(name==='act3b') return renderAct3b();
+  if(name==='act4intro') return renderAct4Intro();
+  if(name==='act4canvas') return renderAct4Canvas();
+  if(name==='act4reflect') return renderAct4Reflect();
+  if(name==='act4quiz') return renderAct4Quiz();
+  if(name==='act4grad') return renderAct4Grad();
+  if(name==='final') return renderFinal();
+}
+
+function shell(caseNum, eyebrow, bodyHtml){
+  root.innerHTML = `<div class="case-number">${caseNum}</div>
+    <div class="eyebrow">${eyebrow}</div>
+    ${bodyHtml}`;
+}
+
+/* ---- Mission Brief ---- */
+function renderBrief(){
+  tag('मिशन ब्रीफ़');
+  shell('फ़ाइल क्रमांक RAB-07', 'ज़िम्मेदार AI समीक्षा बोर्ड', `
+    <h1>स्वागत है, बोर्ड सदस्य।</h1>
+    <p class="lede">जनता तक पहुँचने वाला हर AI सिस्टम पहले आपकी मेज़ से होकर गुज़रता है। आपका काम AI बनाना नहीं है — बल्कि उसे <strong>परखना</strong> है: पक्षपात फैलने से पहले उसे पकड़ना, भ्रम (हैलुसिनेशन) गुमराह करने से पहले उसे पकड़ना, और जोखिम नुकसान पहुँचाने से पहले उसे पहचानना।</p>
+    <p>चार केस फ़ाइलों के दौरान, आप असली AI आउटपुट की समीक्षा करेंगे, नैतिक तैनाती पर फ़ैसला सुनाएँगे, इंसानों और मशीनों के बीच काम बाँटेंगे, और अपना खुद का ज़िम्मेदार AI सिस्टम डिज़ाइन करेंगे।</p>
+    <p class="muted">अनुमानित समय: 8–10 मिनट · 4 केस फ़ाइलें · 1 प्रमाणपत्र दांव पर।</p>
+    <div class="btn-row">
+      <button class="btn btn-brass" onclick="addXP(5); go('act1intro')">नियुक्ति स्वीकार करें →</button>
+    </div>
+  `);
+}
+
+/* ---- Activity 1 ---- */
+function renderAct1Intro(){
+  tag('केस फ़ाइल 1 · नैतिकता समीक्षा');
+  shell('फ़ाइल क्रमांक RAB-07-A', 'गतिविधि 1 · AI नैतिकता समीक्षा बोर्ड', `
+    <h1>पाँच AI जवाब। फ़ैसला आपका।</h1>
+    <p class="lede">आप पाँच असली जैसे लगने वाले AI जवाब देखेंगे। हर एक के लिए, बताएँ कि वह सटीक है, संभवतः पक्षपाती है, सत्यापन ज़रूरी है, या असुरक्षित सिफ़ारिश है — फिर उसका कारण देखें।</p>
+    <p class="muted">खुद से पूछें: क्या हर AI जवाब पूरी तरह सही होता है? क्या AI पक्षपात दिखा सकता है, या आत्मविश्वास से गलत जानकारी पेश कर सकता है? इंसान की भागीदारी क्यों ज़रूरी है?</p>
+    <div class="btn-row">
+      <button class="btn btn-brass" onclick="go('act1')">समीक्षा शुरू करें →</button>
+    </div>
+  `);
+}
+function renderAct1(){
+  tag('केस फ़ाइल 1 · नैतिकता समीक्षा');
+  const i = state.act1.i;
+  const ch = act1Chapters[i];
+  const picked = state.act1.ratings[i];
+
+  let dots = act1Chapters.map((c,idx)=>{
+    let cls = 'dossier-dot';
+    if(idx < i) cls += ' done'; else if(idx===i) cls += ' active';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  let chips = ratingOptions.map(o=>{
+    let cls='rate-chip';
+    if(picked===o.key) cls += ' picked';
+    return `<button class="${cls}" ${picked?'disabled':''} onclick="rateChapter('${o.key}')">${o.label}</button>`;
+  }).join('');
+
+  let feedback = '';
+  if(picked){
+    const correct = picked === ch.correct;
+    feedback = `<div class="feedback-box ${correct?'':'warn'}">
+      ${correct ? '<strong>सही फ़ैसला।</strong> ' : '<strong>दोबारा गौर करने लायक —</strong> '}${ch.explain}
+    </div>`;
+  }
+
+  shell('फ़ाइल क्रमांक RAB-07-A', `अध्याय ${i+1} / 5 · ${ch.title}`, `
+    <div class="dossier-strip">${dots}</div>
+    <h2>${ch.title}</h2>
+    <p class="muted">${ch.context}</p>
+    <div class="feedback-box" style="border-left-color:var(--ink); background:#eef0f6;">
+      <strong>AI कहता है:</strong> ${ch.ai}
+    </div>
+    <span class="field-label">${ch.task}</span>
+    <div class="chip-row">${chips}</div>
+    ${feedback}
+    <div class="btn-row">
+      <button class="btn btn-brass" id="act1next" ${picked?'':'disabled'} onclick="act1Next()">${i<4 ? 'अगला अध्याय →' : 'अपनी समीक्षा का सार देखें →'}</button>
+    </div>
+  `);
+}
+function rateChapter(key){
+  state.act1.ratings[state.act1.i] = key;
+  const correct = key === act1Chapters[state.act1.i].correct;
+  addXP(correct?8:3);
+  render('act1');
+}
+function act1Next(){
+  if(state.act1.i < 4){ state.act1.i++; render('act1'); }
+  else { go('act1summary'); }
+}
+function renderAct1Summary(){
+  tag('केस फ़ाइल 1 · पूर्ण');
+  const correctCount = state.act1.ratings.filter((r,idx)=>r===act1Chapters[idx].correct).length;
+  shell('फ़ाइल क्रमांक RAB-07-A', 'समीक्षा सार', `
+    <h1>बोर्ड समीक्षा: ${correctCount}/5 सही</h1>
+    <p class="lede">ज्ञान जाँच, बोर्ड सदस्य: महत्वपूर्ण AI फ़ैसलों की ज़िम्मेदारी अंततः किसकी रहती है, भले ही जवाब कितना भी आत्मविश्वासी क्यों न लगे?</p>
+    <div class="choice-list" id="kc">
+      <button class="choice" onclick="kcAnswer(this,true)"><span class="tag">A</span> इंसान जवाबदेह बने रहते हैं, ऐसे निर्णय और नैतिकता के साथ जिन्हें AI पूरी तरह बदल नहीं सकता</button>
+      <button class="choice" onclick="kcAnswer(this,false)"><span class="tag">B</span> AI सिस्टम, जैसे ही वह पर्याप्त आत्मविश्वासी लगे</button>
+    </div>
+    <div id="kcFeedback"></div>
+    <div class="btn-row">
+      <button class="btn btn-brass" id="act1summaryNext" disabled onclick="go('act2intro')">केस फ़ाइल 2 पर जाएँ →</button>
+    </div>
+  `);
+}
+function kcAnswer(el, correct){
+  document.querySelectorAll('#kc .choice').forEach(c=>c.classList.add('locked'));
+  el.classList.add(correct?'correct':'incorrect');
+  document.getElementById('kcFeedback').innerHTML = `<div class="feedback-box ${correct?'':'bad'}">
+    ${correct ? 'बिल्कुल सही — जवाबदेही, सहानुभूति और नैतिक निर्णय इंसानों के पास ही रहते हैं, चाहे AI कितना भी धाराप्रवाह क्यों न लगे।' : 'बिल्कुल नहीं — महत्वपूर्ण फ़ैसलों में AI को अंतिम शब्द नहीं होना चाहिए। जवाबदेही इंसानों की ही रहती है।'}
+  </div>`;
+  addXP(correct?10:2);
+  document.getElementById('act1summaryNext').disabled = false;
+}
+
+/* ---- Activity 2 ---- */
+function renderAct2Intro(){
+  tag('केस फ़ाइल 2 · निर्णय बोर्ड');
+  shell('फ़ाइल क्रमांक RAB-07-B', 'गतिविधि 2 · ज़िम्मेदार AI निर्णय बोर्ड', `
+    <h1>पाँच संगठन मंज़ूरी माँग रहे हैं।</h1>
+    <p class="lede">आप राष्ट्रीय ज़िम्मेदार AI परिषद में हैं। हर संगठन एक संवेदनशील स्थिति में AI तैनात करना चाहता है। मंज़ूरी दें, अस्वीकार करें, या मानव निगरानी की सिफ़ारिश करें — और देखें कि AI मेंटर आपके फ़ैसले पर क्या प्रतिक्रिया देता है।</p>
+    <div class="btn-row">
+      <button class="btn btn-brass" onclick="go('act2')">केस-सूची खोलें →</button>
+    </div>
+  `);
+}
+function renderAct2(){
+  tag('केस फ़ाइल 2 · निर्णय बोर्ड');
+  const i = state.act2.i;
+  const sc = act2Scenarios[i];
+  const chosen = state.act2.choices[i];
+
+  let dots = act2Scenarios.map((c,idx)=>{
+    let cls = 'dossier-dot';
+    if(idx < i) cls += ' done'; else if(idx===i) cls += ' active';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  let opts = sc.options.map((o,idx)=>{
+    let cls = 'choice';
+    if(chosen!==undefined){
+      cls += ' locked';
+      if(idx===sc.correctIndex) cls += ' correct';
+      else if(idx===chosen) cls += ' incorrect';
+    }
+    return `<button class="${cls}" ${chosen!==undefined?'disabled':''} onclick="act2Pick(${idx})"><span class="tag">${String.fromCharCode(65+idx)}</span> ${o}</button>`;
+  }).join('');
+
+  let stamp = '';
+  if(chosen!==undefined){
+    const right = chosen===sc.correctIndex;
+    stamp = `<div class="stamp ${right?'approve':'review'}">${right?'स्वीकृत':'दर्ज़'}</div>`;
+  }
+
+  let feedback = chosen!==undefined ? `<div class="feedback-box">${sc.feedback}</div>` : '';
+
+  shell('फ़ाइल क्रमांक RAB-07-B', `${sc.title} · ${i+1} / 5`, `
+    <div class="dossier-strip">${dots}</div>
+    ${stamp}
+    <h2>${sc.title}</h2>
+    <p class="lede">${sc.prompt}</p>
+    <span class="field-label">आपका फ़ैसला</span>
+    <div class="choice-list">${opts}</div>
+    ${feedback}
+    <div class="btn-row">
+      <button class="btn btn-brass" ${chosen!==undefined?'':'disabled'} onclick="act2Next()">${i<4?'अगला केस →':'नैतिकता डैशबोर्ड देखें →'}</button>
+    </div>
+  `);
+}
+function act2Pick(idx){
+  state.act2.choices[state.act2.i] = idx;
+  addXP(idx===act2Scenarios[state.act2.i].correctIndex ? 10 : 4);
+  render('act2');
+}
+function act2Next(){
+  if(state.act2.i<4){ state.act2.i++; render('act2'); }
+  else go('act2dash');
+}
+function renderAct2Dash(){
+  tag('केस फ़ाइल 2 · पूर्ण');
+  const correct = state.act2.choices.filter((c,idx)=>c===act2Scenarios[idx].correctIndex).length;
+  function starsFor(n){ return '★'.repeat(n) + '☆'.repeat(5-n); }
+  const fairness = Math.max(3, correct);
+  shell('फ़ाइल क्रमांक RAB-07-B', 'नैतिक जाँच-बिंदु', `
+    <h1>परिषद डैशबोर्ड</h1>
+    <p>AI के अच्छा प्रदर्शन करने पर भी इंसानों की भागीदारी क्यों ज़रूरी है?</p>
+    <textarea class="textarea" id="ethicsReason" placeholder="अपना तर्क यहाँ लिखें — निर्णय, सहानुभूति, जवाबदेही..."></textarea>
+    <div class="btn-row" style="margin-top:12px;">
+      <button class="btn btn-ghost" onclick="submitEthicsReason()">तर्क सबमिट करें</button>
+    </div>
+    <div id="dashResult" class="hidden">
+      <div class="dash-row"><span>निष्पक्षता</span><span class="stars">${starsFor(fairness)}</span></div>
+      <div class="dash-row"><span>पारदर्शिता</span><span class="stars">${starsFor(5)}</span></div>
+      <div class="dash-row"><span>सुरक्षा</span><span class="stars">${starsFor(4)}</span></div>
+      <div class="dash-row"><span>मानव निगरानी</span><span class="stars">${starsFor(5)}</span></div>
+      <div class="btn-row">
+        <button class="btn btn-brass" onclick="go('act3intro')">केस फ़ाइल 3 पर जाएँ →</button>
+      </div>
+    </div>
+  `);
+}
+function submitEthicsReason(){
+  addXP(8);
+  document.getElementById('dashResult').classList.remove('hidden');
+}
+
+/* ---- Activity 3 ---- */
+function renderAct3Intro(){
+  tag('केस फ़ाइल 3 · AI या इंसान?');
+  shell('फ़ाइल क्रमांक RAB-07-C', 'गतिविधि 3 · AI या इंसान?', `
+    <h1>काम को छाँटें।</h1>
+    <p class="lede">सरकारें पूछ रही हैं: यह काम वाकई किसे करना चाहिए — AI को, इंसान को, या दोनों को मिलकर? हर काम को सही श्रेणी में डालें। किसी काम पर टैप करें, फिर वहाँ टैप करें जहाँ वह जाता है।</p>
+    <div class="btn-row">
+      <button class="btn btn-brass" onclick="go('act3')">छाँटना शुरू करें →</button>
+    </div>
+  `);
+}
+function renderAct3(){
+  tag('केस फ़ाइल 3 · AI या इंसान?');
+  const assignedCount = Object.keys(state.act3.assigned).length;
+  let tasksHtml = act3Tasks.map((t,idx)=>{
+    const done = state.act3.assigned[idx]!==undefined;
+    const sel = state.act3.selected===idx;
+    let cls='task-pill';
+    if(done) cls += ' assigned';
+    if(sel) cls += ' selected';
+    let badge = done ? bucketLabels[state.act3.assigned[idx]] + (state.act3.assigned[idx]===t.answer ? ' ✓' : ' ✗') : '';
+    return `<div class="${cls}" onclick="${done?'':'selectTask('+idx+')'}">
+      <span>${t.task}</span><span class="badge">${badge}</span>
+    </div>`;
+  }).join('');
+
+  shell('फ़ाइल क्रमांक RAB-07-C', `कार्य वर्गीकरण · ${assignedCount}/8 रखे गए`, `
+    <h2>यह काम किस श्रेणी में आता है?</h2>
+    <p class="muted">नीचे किसी काम पर टैप करें, फिर उसे रखने के लिए 🤖 AI, 👤 इंसान, या 🤝 दोनों पर टैप करें।</p>
+    <div class="task-grid">${tasksHtml}</div>
+    <div class="bucket-row">
+      <div class="bucket" onclick="assignTask('ai')"><span class="icon">🤖</span>AI</div>
+      <div class="bucket" onclick="assignTask('human')"><span class="icon">👤</span>इंसान</div>
+      <div class="bucket" onclick="assignTask('both')"><span class="icon">🤝</span>दोनों</div>
+    </div>
+    <div id="assignFeedback"></div>
+    <div class="btn-row">
+      <button class="btn btn-brass" ${assignedCount===8?'':'disabled'} onclick="go('act3b')">अगला: सुरक्षा समीक्षा →</button>
+    </div>
+  `);
+}
+function selectTask(idx){
+  state.act3.selected = idx;
+  render('act3');
+}
+function assignTask(bucket){
+  const idx = state.act3.selected;
+  if(idx===null || idx===undefined) return;
+  state.act3.assigned[idx] = bucket;
+  const correct = bucket === act3Tasks[idx].answer;
+  addXP(correct?6:2);
+  state.act3.selected = null;
+  render('act3');
+  const fb = document.getElementById('assignFeedback');
+  if(fb){
+    fb.innerHTML = `<div class="feedback-box ${correct?'':'warn'}">
+      "${act3Tasks[idx].task}" को ${bucketLabels[act3Tasks[idx].answer]} द्वारा संभालना सबसे अच्छा है${correct?' — आपका फ़ैसला भी यही था।':'। '}
+    </div>`;
+  }
+}
+function renderAct3b(){
+  tag('केस फ़ाइल 3 · सुरक्षा समीक्षा');
+  const i = state.act3.i2;
+  const sys = act3Systems[i];
+  const picked = state.act3.review[i];
+
+  let dots = act3Systems.map((c,idx)=>{
+    let cls = 'dossier-dot';
+    if(idx < i) cls += ' done'; else if(idx===i) cls += ' active';
+    return `<div class="${cls}"></div>`;
+  }).join('');
+
+  let chips = systemOptions.map(o=>{
+    let cls = 'rate-chip';
+    if(picked===o.key) cls += ' picked';
+    return `<button class="${cls}" ${picked?'disabled':''} onclick="reviewSystem('${o.key}')">${o.label}</button>`;
+  }).join('');
+
+  let feedback = picked ? `<div class="feedback-box ${picked===sys.answer?'':'warn'}">${sys.note}</div>` : '';
+
+  shell('फ़ाइल क्रमांक RAB-07-C', `सिस्टम ${i+1} / 5`, `
+    <div class="dossier-strip">${dots}</div>
+    <h2>${sys.name}</h2>
+    <p class="muted">क्या यह AI सिस्टम तैनात करने के लिए सुरक्षित है? नीचे रेटिंग दें।</p>
+    <div class="chip-row">${chips}</div>
+    ${feedback}
+    <div class="btn-row">
+      <button class="btn btn-brass" ${picked?'':'disabled'} onclick="act3bNext()">${i<4?'अगला सिस्टम →':'अंतिम केस पर जाएँ →'}</button>
+    </div>
+  `);
+}
+function reviewSystem(key){
+  state.act3.review[state.act3.i2] = key;
+  addXP(key===act3Systems[state.act3.i2].answer?7:2);
+  render('act3b');
+}
+function act3bNext(){
+  if(state.act3.i2<4){ state.act3.i2++; render('act3b'); }
+  else go('act4intro');
+}
+
+/* ---- Activity 4 ---- */
+function renderAct4Intro(){
+  tag('केस फ़ाइल 4 · भविष्य का नेता');
+  shell('फ़ाइल क्रमांक RAB-07-D', 'गतिविधि 4 · भविष्य का AI नेता', `
+    <h1>एक ज़िम्मेदार AI समाधान डिज़ाइन करें।</h1>
+    <p class="lede">एक वास्तविक दुनिया की समस्या चुनें और उसे हल करने में मदद के लिए एक AI सिस्टम की रूपरेखा बनाएँ — ऐसा जो अपने जोखिमों के बारे में ईमानदार हो और यह स्पष्ट हो कि नियंत्रण इंसानों के पास कहाँ रहता है।</p>
+    <span class="field-label">अपनी समस्या चुनें</span>
+    <div class="choice-list" id="probList">
+      ${problems.map(p=>`<button class="choice" onclick="pickProblem(this,'${p}')">${p}</button>`).join('')}
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-brass" id="probNext" disabled onclick="go('act4canvas')">प्रोजेक्ट कैनवास खोलें →</button>
+    </div>
+  `);
+}
+function pickProblem(el,p){
+  document.querySelectorAll('#probList .choice').forEach(c=>c.classList.remove('correct'));
+  el.classList.add('correct');
+  state.act4.problem = p;
+  document.getElementById('probNext').disabled = false;
+}
+function renderAct4Canvas(){
+  tag('केस फ़ाइल 4 · प्रोजेक्ट कैनवास');
+  const c = state.act4.canvas;
+  shell('फ़ाइल क्रमांक RAB-07-D', `प्रोजेक्ट कैनवास · ${state.act4.problem}`, `
+    <h1>AI प्रोजेक्ट कैनवास</h1>
+    <span class="field-label">आपका AI समाधान</span>
+    <textarea class="textarea" id="c_solution" placeholder="आप जो AI सिस्टम बनाएँगे, उसका वर्णन करें।">${c.solution||''}</textarea>
+    <span class="field-label">फ़ायदे</span>
+    <textarea class="textarea" id="c_benefits" placeholder="इसका क्या सकारात्मक असर होगा?">${c.benefits||''}</textarea>
+    <span class="field-label">संभावित जोखिम</span>
+    <textarea class="textarea" id="c_risks" placeholder="क्या गलत हो सकता है?">${c.risks||''}</textarea>
+    <span class="field-label">मानव ज़िम्मेदारी</span>
+    <textarea class="textarea" id="c_human" placeholder="इसके लिए किस तरह की निगरानी चाहिए?">${c.human||''}</textarea>
+    <div class="btn-row">
+      <button class="btn btn-brass" onclick="saveCanvas()">कैनवास सहेजें →</button>
+    </div>
+  `);
+}
+function saveCanvas(){
+  state.act4.canvas = {
+    solution: document.getElementById('c_solution').value,
+    benefits: document.getElementById('c_benefits').value,
+    risks: document.getElementById('c_risks').value,
+    human: document.getElementById('c_human').value
+  };
+  addXP(15);
+  go('act4reflect');
+}
+function renderAct4Reflect(){
+  tag('केस फ़ाइल 4 · चिंतन');
+  const r = state.act4.reflections;
+  shell('फ़ाइल क्रमांक RAB-07-D', 'नेतृत्व चिंतन', `
+    <h1>तीन चिंतन प्रश्न</h1>
+    <span class="field-label">एक चीज़ जिसे AI को कभी नहीं बदलना चाहिए</span>
+    <textarea class="textarea" id="r1" placeholder="आपका उत्तर...">${r.r1||''}</textarea>
+    <span class="field-label">एक कौशल जो इंसानों को हमेशा विकसित करते रहना चाहिए</span>
+    <textarea class="textarea" id="r2" placeholder="आपका उत्तर...">${r.r2||''}</textarea>
+    <span class="field-label">आप AI का ज़िम्मेदारी से उपयोग कैसे करेंगे?</span>
+    <textarea class="textarea" id="r3" placeholder="आपका उत्तर...">${r.r3||''}</textarea>
+    <div class="btn-row">
+      <button class="btn btn-brass" onclick="saveReflection()">चिंतन सबमिट करें →</button>
+    </div>
+  `);
+}
+function saveReflection(){
+  state.act4.reflections = {
+    r1: document.getElementById('r1').value,
+    r2: document.getElementById('r2').value,
+    r3: document.getElementById('r3').value
+  };
+  addXP(15);
+  go('act4quiz');
+}
+function renderAct4Quiz(){
+  tag('केस फ़ाइल 4 · व्यक्तित्व क्विज़');
+  const step = state.act4.quizStep;
+  if(step >= quizQuestions.length){
+    // compute result
+    const tally = {};
+    state.act4.quiz.forEach(t=>tally[t]=(tally[t]||0)+1);
+    let best='guardian', bestN=-1;
+    Object.keys(quizResults).forEach(k=>{ if((tally[k]||0)>bestN){best=k; bestN=tally[k]||0;} });
+    const res = quizResults[best];
+    shell('फ़ाइल क्रमांक RAB-07-D', 'आप किस तरह के ज़िम्मेदार AI नेता हैं?', `
+      <h1>आपका परिणाम</h1>
+      <div class="result-card">
+        <span class="result-emoji">${res.emoji}</span>
+        <h2>${res.name}</h2>
+        <p>${res.desc}</p>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-brass" onclick="go('act4grad')">अंतिम चुनौती →</button>
+      </div>
+    `);
+    return;
+  }
+  const q = quizQuestions[step];
+  shell('फ़ाइल क्रमांक RAB-07-D', `प्रश्न ${step+1} / ${quizQuestions.length}`, `
+    <h2>${q.q}</h2>
+    <div class="choice-list">
+      ${q.options.map((o,idx)=>`<button class="choice" onclick="quizPick('${o.trait}')">${o.label}</button>`).join('')}
+    </div>
+  `);
+}
+function quizPick(trait){
+  state.act4.quiz.push(trait);
+  state.act4.quizStep++;
+  addXP(5);
+  render('act4quiz');
+}
+function renderAct4Grad(){
+  tag('केस फ़ाइल 4 · दीक्षांत चुनौती');
+  shell('फ़ाइल क्रमांक RAB-07-D', 'दीक्षांत चुनौती', `
+    <h1>अंतिम फ़ैसला।</h1>
+    <p class="lede">एक स्कूल प्रस्ताव रखता है: "अनुशासन बेहतर बनाने के लिए AI, फ़ेस रिकग्निशन का उपयोग करके छात्रों की निगरानी करना चाहता है।"</p>
+    <div class="choice-list" id="gradChoices">
+      <button class="choice" onclick="gradPick(this,false)"><span class="tag">A</span> मंज़ूर करें</button>
+      <button class="choice" onclick="gradPick(this,true)"><span class="tag">B</span> सुरक्षा उपायों के साथ मंज़ूर करें</button>
+      <button class="choice" onclick="gradPick(this,false)"><span class="tag">C</span> अस्वीकार करें</button>
+    </div>
+    <div id="gradFeedback"></div>
+    <div class="btn-row">
+      <button class="btn btn-brass" id="gradNext" disabled onclick="go('final')">अपना प्रमाणपत्र देखें →</button>
+    </div>
+  `);
+}
+function gradPick(el, correct){
+  document.querySelectorAll('#gradChoices .choice').forEach(c=>c.classList.add('locked'));
+  el.classList.add(correct?'correct':'incorrect');
+  document.getElementById('gradFeedback').innerHTML = `<div class="feedback-box ${correct?'':'warn'}">
+    ${correct ? 'मज़बूत फ़ैसला।' : 'इसके बजाय इस पर विचार करें —'} गोपनीयता, सहमति, पारदर्शिता, और आनुपातिकता — सब मायने रखते हैं। सुरक्षा उपाय स्कूल को छात्रों के अधिकार छीने बिना सुरक्षा टूल का फ़ायदा लेने देते हैं।
+  </div>`;
+  addXP(correct?15:5);
+  document.getElementById('gradNext').disabled = false;
+}
+
+/* ---- Final ---- */
+function renderFinal(){
+  tag('मिशन पूर्ण');
+  shell('फ़ाइल क्रमांक RAB-07 — बंद', 'मिशन पूर्णता डैशबोर्ड', `
+    <h1>केस बंद, बोर्ड सदस्य।</h1>
+    <p class="lede">आपने AI आउटपुट की समीक्षा की, नैतिक तैनाती पर फ़ैसले सुनाए, इंसान बनाम AI काम को छाँटा, और अपना खुद का ज़िम्मेदार AI सिस्टम डिज़ाइन किया।</p>
+    <div class="final-badges">
+      <div class="badge-circle"><div class="icon">🌍</div>ज़िम्मेदार AI नेता</div>
+      <div class="badge-circle"><div class="icon">🏆</div>प्रमाणित AI एक्सप्लोरर</div>
+    </div>
+    <div class="dash-row"><span>कुल अर्जित XP</span><span class="stars">${state.xp} XP</span></div>
+    <div class="dash-row"><span>मिशन ब्रीफ़</span><span>देखा गया ✓</span></div>
+    <div class="dash-row"><span>नैतिकता समीक्षा</span><span>पूर्ण ✓</span></div>
+    <div class="dash-row"><span>निर्णय बोर्ड</span><span>पूर्ण ✓</span></div>
+    <div class="dash-row"><span>AI या इंसान वर्गीकरण</span><span>पूर्ण ✓</span></div>
+    <div class="dash-row"><span>भविष्य का AI प्रोजेक्ट</span><span>सबमिट ✓</span></div>
+    <p class="muted" style="margin-top:18px;">आपने AI जागरूकता से लेकर ज़िम्मेदार AI नेतृत्व तक की यात्रा पूरी कर ली है — यही हर AI-साक्षर नागरिक की मुख्य योग्यता है।</p>
+  `);
+}
+
+/* ---------------- INIT ---------------- */
+go('brief');
+</script>
+</body>
+</html>
